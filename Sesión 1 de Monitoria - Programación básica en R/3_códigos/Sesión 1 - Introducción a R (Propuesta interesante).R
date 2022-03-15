@@ -113,13 +113,13 @@ class(Colores)
 
 # clases de vectores
 
-vect_char = c("primero", "segundo", "tercero")
-vect_num = c(1, 2, 3)
-vect_logic = c(TRUE, FALSE, F, T)
+vect_char = c("primero", "segundo", "tercero"); vect_char
+vect_num = c(1, 2, 3); vect_num
+vect_logic = c(TRUE, FALSE, F, T); vect_logic
 
 # transformar un vector de un tipo a otro tipo 
 ## por ejemplo transformar un vector de tipo character en un vector de tipo factor
-vect_fact = as.factor(vect_char)
+vect_fact = as.factor(vect_char); vect_fact
 
 #Estadistica descriptiva y dispersión del vector
 summary(Notas) #Sesgada o con cola hacia la izquierda
@@ -164,8 +164,8 @@ diag(10)
 Mat_diag = diag(1:10)
 
 #Producto de matrices
-dim(MAT3)
-dim(MAT4)
+dim(MAT3) #conocer las dimensiones de una matriz: 11x2
+dim(MAT4) #2x11
 MAT3%*%MAT4
 
 #Inversa de una matriz: solve()
@@ -275,23 +275,41 @@ library(readxl) # Libreria pra leer achivos excel
 library(haven) # Libreria para leer archivos .dta de stata
 
 # 8.1 Paquete dplyr ----
+library(dplyr) #Importamos el paquete
 
 # dplyr es el paquete para manipular bases de datos en R
 
 # mtcars: base de datos sobre características de carros antiguos
+?mtcars
 
 # Nota: Lo primero que siempre se debe hacer es visualizar la base de datos
 #       Siempreeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee!
 
-view(mtcars)
-glimpse(mtcars) # visualizar una base de datos (Recordar que toda base de datos se trabaja como un objeto data.frame o tibble)
+#Existen varias formas para ello:
+print(mtcars) #Como su palabra lo dice, imprime el dataset en la consola
+View(mtcars) #Lanza una nueva pestaña 
+glimpse(mtcars) # visualizar una base de datos con el tipo de objeto 
+#(Recordar que toda base de datos se trabaja como un objeto data.frame o tibble)
 
 # Recuerden la estructura de una base de datos: 
 ## columnas: Cada columna representa una variable diferente
 ## filas: Cada fila representa una observación 
 ## (es decir la info. de cada variable para una determinada observación, ya sea casa, individuo y demás)
 
-# Manipulación de base de datos usando dplyr
+
+######Manipulación de base de datos usando dplyr
+
+# Selección de unas variables de interés *SELECT*
+mtcars_selected = mtcars %>% 
+  select(mpg, cyl, disp)
+
+#Ordenar de forma descendente mpg
+mtcars_selected %>%
+  arrange(desc(mpg))
+
+# Filtrar bases de datos a partir de los valores de una variable 
+mtcars_selected %>% 
+  filter(cyl > 4) #podemos usar cualquier operador numérico
 
 # Creación de variables a partir de variables antiguas
 manip1 = mtcars %>%  
@@ -299,20 +317,89 @@ manip1 = mtcars %>%
 
 # manip1 = mutate(mtcars, mult = mpg * cyl, sqr_mpg = mpg^2)
 
-# Filtrar bases de datos a partir de los valores de una variable 
-manip2 = mtcars %>% 
-  filter(cyl > 4)
-
 # Para sacar estadística descriptiva de una base de datos
 manip3 = mtcars %>% 
   group_by(cyl) %>% 
   summarize(n  = n()) 
 
-# Selección de unas variables de interés
-manip4 = mtcars %>% 
-  select(mpg, cyl, disp)
+####Otro ejemplo análogo_ Condadoa de EE.UU 
+
+#Importamos la base de datos 
+counties = read_rds(file.choose())
+
+## Seleccionamos ciertas columnas de interés
+counties_selected = counties %>%
+  select(state, county, population, 
+         private_work, public_work, self_employed)
+
+## Ordenar de manera descendente el trabajo públicp
+counties_selected %>%
+  arrange(desc(public_work))
+
+##Vamos a seleccionar otras variables 
+counties_selected2 = counties %>%
+  select(state, county, population)
+
+## Filtramos por los condados con una población superior a un millón
+counties_selected2 %>%
+  filter(population > 1000000)
+
+## Filtramos por los condados en 
+#el estadp de California con una población superior a un millón
+counties_selected2 %>%
+  filter(state == "California",
+         population > 1000000)
+#resultado: hay 9 condados en California con una población superior a un millón
+
+#Seleccionamos de nuevo unas columnas en específico
+counties_selected3 <- counties %>%
+  select(state, county, population, men, women)
+
+#Calculamos la proporción de mujeres como una fracción entre el número de mujeres /población
+counties_selected3 %>%
+  mutate(proportion_women = women / population)
+
+#A manera de resumen de los 4 verbos más importantes:
+#Select, mutate, filter y arrange
+counties %>%
+  # Seleccionamos 5 columnas
+  select(state, county, population, men, women) %>%
+  # Añadimos la proporción de mujeres
+  mutate(proportion_women = women / population) %>%
+  # Filtramos por una población de al menos 10k habitantes
+  filter(population >= 10000) %>% 
+  # Ordemanos de manera descendente por la proporción de mujeres 
+  arrange(desc(proportion_women))
+
+##Otros 2 verbos importantes: Summarize y group_by
+
+#De nuevo, seleccionamos las variables que necesitamos
+counties_selected4 = counties %>%
+  select(state, county, population, income, unemployment)
+
+# Agrupamos para encontrar la población mín., máx. desempleo y el ingreso promedio
+counties_selected4 %>%
+  summarize(min_population = min(population),
+            max_unemployment = max(unemployment),
+            average_income = mean(income))
+
+#¿A cuáles condados corresponden los 2 primeros valores?
+counties_selected4 %>% 
+  #filter(population == "85")
+  filter(unemployment == "29.4")
+
+#Agrupamos por (group by) estado para encontrar el área total y la población
+data_grap1 = counties_selected5 %>%
+  group_by(state) %>%
+  summarize(total_area = sum(land_area),
+            total_population = sum(population)) %>% 
+  
+  #Si queremos saber la densidad (en cantidades de personas por metro^2)
+  mutate(density = total_population / total_area) %>%
+  arrange(desc(density))
 
 # 8.2 Paquete tidyr ----
+library(tidyr)
 
 # iris: base de datos sobre 3 tipos diferentes de flores 
 view(iris)
@@ -344,6 +431,33 @@ grafica = mtcars %>%
   theme_classic()
 
 grafica
+
+##Del otro ejemplo 
+
+#gráfica donde tengmos el income pc en el eje y y en
+#el eje x la proporción de mujeres 
+
+#summarize de todos los estados 
+
+#Tomamos el ejemplos anterior 
+data_graph2 = counties %>% 
+  select(state, county, population, women, income_per_cap, public_work) %>%
+  mutate(public_workers = public_work * population / 100) %>% 
+  group_by(state) %>% 
+  summarize(mean_income = mean(income_per_cap), 
+            mean_propwork = mean(public_workers),
+            mean_pop = mean(population)) 
+
+graph2= data_graph2 %>% 
+  ggplot(aes(x = mean_income, y = mean_propwork, size=mean_pop)) +
+  geom_point(aes(color = factor(state))) +
+  theme_bw()
+
+#Otra forma más detallada 
+graph3= data_graph2 %>% 
+  ggplot(aes(x = mean_income, y = mean_propwork)) +
+  geom_point() +
+  facet_wrap(~ state)  
 
 # 9. Simulación de Monte Carlo (Aplicación práctica de todo lo aprendido en monitoria) ----
 
