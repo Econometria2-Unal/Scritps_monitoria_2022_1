@@ -400,3 +400,4 @@ acf(yt5n,lag.max=lags,plot=T,lwd=2,xlab='',main='ACF del PGD ARIMA(1,1,1)')
 pacf(yt5n,lag.max=lags,plot=T,lwd=2,xlab='',main='PACF del PGD ARIMA(1,1,1)')
 
 # Se observa la típica caída "lineal" lenta que uno esperaría ver en una serie no estacionaria. 
+
