@@ -550,7 +550,7 @@ glimpse(arima_3.1.5_lindprod_fable)
 #Modelo arima(4,1,2)
 
 arima_4.1.2_lindprod_fable  = as_tsibble(l.indprod) %>%
-  model(arima315 = ARIMA(value ~ pdq(4,1,2) + PDQ(0, 0, 0)))
+  model(arima412 = ARIMA(value ~ pdq(4,1,2) + PDQ(0, 0, 0)))
 
 glimpse(arima_4.1.2_lindprod_fable)
 
@@ -679,7 +679,7 @@ res_arima_3.1.5_lindprod = residuals(arima_3.1.5_lindprod)
 
 ## ACF y PACF para el modelo con d = 1
 ggAcf(res_arima_3.1.5_lindprod, lwd=2) + ggtitle("ACF residuales") + theme_light()
-ggPacf(res_arima_3.1.5_lindprod, lwd=2) + ggtitle("ACF residuales al cuadrado") + theme_light() # la ACF y PACF parece indicar que no hay correlación serial en los residuales del modelo
+ggPacf(res_arima_3.1.5_lindprod, lwd=2) + ggtitle("PACF residuales al cuadrado") + theme_light() # la ACF y PACF parece indicar que no hay correlación serial en los residuales del modelo
 
 # Pruebas formales: 
 
@@ -880,6 +880,14 @@ forescast_arima_3.1.5_lindprod = arima_3.1.5_lindprod_fable %>%
 #       No obstante, para efectos prácticos del curso de econometría II, como los modelos GARCH están por fuera de la temática del curso, 
 #       pueden emplear la función forecast de fable para tratar problemas de no normalidad independiente de que haya heterocesdasticidad o no en los errores. 
 
+# Adicionalmente, utilizando el comando hilo() que se encuentra en el paquete fable es posible mostrar 
+# tanto el valor de los pronósticos puntuales como los intervalos de predicción a diferentes niveles. 
+# level = c(80, 90, 95). Para encontrar los intervalos de predicción al 80, 95 y 95 %
+pronósticos_3.1.5_lindprod = forescast_arima_3.1.5_lindprod %>% 
+  hilo(level = c(80, 90, 95)); pronósticos_3.1.5_lindprod
+
+View(pronósticos_3.1.5_lindprod)
+
 # Gráfica pronóstico 10 pasos adelante
 x11()
 forescast_arima_3.1.5_lindprod %>% 
@@ -888,6 +896,11 @@ forescast_arima_3.1.5_lindprod %>%
 # Pronóstico 10 pasos adelantes, valores numéricos - modelo(4,1,2)
 forescast_arima_4.1.2_lindprod = arima_4.1.2_lindprod_fable %>% 
   forecast(h = 10, bootstrap = TRUE, times = 10000); forescast_arima_4.1.2_lindprod
+
+pronósticos_4.1.2_lindprod = forescast_arima_4.1.2_lindprod %>% 
+  hilo(level = c(80, 90, 95)); pronósticos_4.1.2_lindprod
+
+View(pronósticos_4.1.2_lindprod)
 
 # Gráfica pronóstico 10 pasos adelante
 x11()
